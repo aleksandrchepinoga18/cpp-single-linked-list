@@ -25,7 +25,6 @@ class SingleLinkedList {
         explicit BasicIterator(Node* node) {
             node_ = node;
         }
-
     public:
         using iterator_category = std::forward_iterator_tag;
         using value_type = Type;
