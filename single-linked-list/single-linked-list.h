@@ -25,6 +25,7 @@ class SingleLinkedList {
         explicit BasicIterator(Node* node) {
             node_ = node;
         }
+
     public:
         using iterator_category = std::forward_iterator_tag;
         using value_type = Type;
@@ -57,26 +58,26 @@ class SingleLinkedList {
         }
 
         BasicIterator& operator++() noexcept {
+        assert(node_ != nullptr);
             node_ = node_->next_node;
             return *this;
         }
 
         BasicIterator operator++(int) noexcept {
+          assert(node_ != nullptr);
             auto old_value(*this);
             ++(*this);
             return old_value;
         }
 
         [[nodiscard]] reference operator*() const noexcept {
+           assert(node_ != nullptr);
             return node_->value;
         }
 
         [[nodiscard]] pointer operator->() const noexcept {
-            if(node_){
+              assert(node_ != nullptr);
                 return &node_->value;
-            }else{
-                return nullptr;
-            }
         }
 
     private:
@@ -85,19 +86,6 @@ class SingleLinkedList {
 
 public:
     SingleLinkedList() {}
-    
-    template <typename TypeIt>
-    void Init(TypeIt begin, TypeIt end){
-        SingleLinkedList helper;
-        Node** node = &helper.head_.next_node;
-        for (TypeIt i= begin;i!=end; ++i) {
-            assert(!*node);
-            ++helper.size_;
-            *node= new Node(*i, nullptr);
-            node= &((*node)->next_node);
-        }
-        swap(helper);
-    }
     
     SingleLinkedList(std::initializer_list<Type> values) {
         Init(values.begin(), values.end());
@@ -164,10 +152,7 @@ public:
     }
 
     [[nodiscard]] bool IsEmpty() const noexcept {
-        if (!size_) {
-        return true;
-        }
-        return false;
+        return !(size_ != 0);
     }
     
     void PushFront(const Type& value) {
@@ -183,7 +168,7 @@ public:
     }
 
     void PopFront() noexcept {
-        assert(IsEmpty()==0);
+        assert(!IsEmpty());
         --size_;
         Node* helper = head_.next_node->next_node;
         delete head_.next_node;
@@ -191,7 +176,8 @@ public:
     }
 
     Iterator EraseAfter(ConstIterator pos) noexcept {
-        assert(IsEmpty()==0); 
+        assert(!IsEmpty()); 
+        assert(pos.node_ != nullptr);
         --size_;
         Node* helper = pos.node_->next_node->next_node;
         delete pos.node_->next_node;
@@ -220,9 +206,23 @@ public:
 private:
     Node head_;
     size_t size_ = 0;
+    
+       template <typename TypeIt>
+    void Init(TypeIt begin, TypeIt end){
+        SingleLinkedList helper;
+        Node** node = &helper.head_.next_node;
+        for (TypeIt i= begin;i!=end; ++i) {
+            assert(!*node);
+            ++helper.size_;
+            *node= new Node(*i, nullptr);
+            node= &((*node)->next_node);
+        }
+        swap(helper);
+    }
 };
 
 // внешние функции разместите здесь
+
 template <typename Type>
 void swap(SingleLinkedList<Type>& lhs, SingleLinkedList<Type>& rhs) noexcept {
     lhs.swap(rhs);
@@ -230,31 +230,35 @@ void swap(SingleLinkedList<Type>& lhs, SingleLinkedList<Type>& rhs) noexcept {
  
 template <typename Type>
 bool operator==(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    std::equal(lhs.begin(), lhs.end(),
+               rhs.begin(), lhs.end());
+    return true;
 }
  
 template <typename Type>
 bool operator!=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return !(lhs==rhs);
+    !std::equal(lhs.begin(), lhs.end(),
+                rhs.begin(), lhs.end());
+    return true;
 }
  
 template <typename Type>
 bool operator<(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return true;
 }
  
 template <typename Type>
 bool operator<=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return !(rhs < lhs);
+    return rhs < lhs;
 }
  
 template <typename Type>
 bool operator>(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return rhs <lhs;
+    return  rhs < lhs;
 }
  
 template <typename Type>
 bool operator>=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-   return !(lhs <rhs);
+    return rhs < lhs;
 }
-
